@@ -1,10 +1,11 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:shelf/shelf.dart';
 import 'package:shelf/shelf_io.dart' as shelf_io;
 import 'package:shelf_router/shelf_router.dart';
 
-const port = String.fromEnvironment('PORT', defaultValue: '8080');
+final portVar = Platform.environment['PORT'];
 
 Future<void> start() async {
   final app = Router();
@@ -22,7 +23,11 @@ Future<void> start() async {
 
   final handler = const Pipeline().addMiddleware(logRequests()).addHandler(app);
 
-  final server = await shelf_io.serve(handler, 'localhost', 8080);
+  final server = await shelf_io.serve(
+    handler,
+    InternetAddress.anyIPv4,
+    int.tryParse(portVar ?? '8080') ?? 8080,
+  );
   server.autoCompress = true;
 
   print('Serving at http://${server.address.host}:${server.port}');
